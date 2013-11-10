@@ -13,6 +13,7 @@
     (setf (trie-st-counter trie) (+ 1 counter))
     counter))
 
+;; A node in the trie
 (defstruct state
   (id (error "Value must be provided"))
   (transitions (make-transitions)) ;; st1 -- a --> st2

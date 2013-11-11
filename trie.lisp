@@ -29,22 +29,35 @@
 
 (defun transition (st v)
   "Returns the state reached from receiving v while in state 'st'"
-  (gethash v (state-transitions st)))
+  (when st (gethash v (state-transitions st))))
 
-(defun adder (trie)
-  (let ((current (trie-init-st trie)))
-    (lambda (c)
-      (let* ((next (transition current c))
-	     (next (if (not next) (add-transition current c (make-state :id (next-id trie)))
-		       next)))
-	(setf current next)))))
 
 (defun add-term (trie term output)
   "Adds a term to the TRIE and associates the output in its last node"
-  (let ((last-node (car (last (map 'list (adder trie) term)))))
-    (setf (state-final last-node) t)
-    (setf (state-output last-node) output)))
+  (labels ((adder (trie)
+	     (let ((current (trie-init-st trie)))
+	       (lambda (c)
+		 (let* ((next (transition current c))
+			(next (if (not next) 
+				  (add-transition current c (make-state :id (next-id trie)))
+				  next)))
+		   (setf current next))))))
+    (let ((last-node (car (last (map 'list (adder trie) term)))))
+      (setf (state-final last-node) t)
+      (setf (state-output last-node) output))))
 
+(defun remove-term (trie term)
+  "Removes the term from the trie, if present"
+  (labels ((remove-term-rec (chars states remove-flag)
+	     (format t "~a, ~a, flag:  ~a~%" (car chars) (car states) remove-flag)
+	     (if remove-flag
+		 (let ((remove-st (<= (hash-table-count (state-transitions (car states))) 1)))
+		   (format t "remove-st: ~a~%" remove-st)
+		   (remhash (car chars) (state-transitions (car states)))
+		   (remove-term-rec (cdr chars) (cdr states) remove-st)))))
+    (when (term-present-p trie term) 
+      (let ((branch (get-term-branch trie term)))
+	(remove-term-rec (cons #\. (coerce (reverse term) 'list)) branch t)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -74,16 +87,34 @@
     (print-trie trie stream)))
 
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Query the trie
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+
+(defun get-term-branch (trie term)
+  (reduce (lambda (st-lst c)
+	    (let ((next-st (transition (car st-lst) c)))
+	      (if next-st (cons next-st st-lst)
+		  st-lst))) 
+	  term :initial-value (list (trie-init-st trie))))
+
 (defun last-state (trie prefix)
   (reduce #'transition prefix :initial-value (trie-init-st trie)))
 
+
 (defun term-present-p (trie term)
   "Predicate that checks if a term is included in the trie"
-  (state-final (last-state trie term)))
+  (let ((last-st (last-state trie term))) 
+    (if last-st (state-final last-st)
+	nil)))
+
+(defun get-output (trie term)
+  "Retrieves the output for a give term, if present in the trie"
+  (let ((last-st (last-state trie term))) 
+    (if last-st (state-output last-st)
+	nil)))
 
 (defun retrieve-terms (state prefix)
   (let ((lst '()))
@@ -100,7 +131,7 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Comparison
+;; Comparison (only used for testing)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defparameter *long-text* "“Evolution” attempts to simulate a very simple world where animals roam in directions dictated by their genes, eating food and reproducing asexually. Reproductions cause random changes to genes and hence the movement of animals. The center of the game world has more food resources than the rest, which means we can expect different types of animal to evolve in the middle than the rest of the world. It’s apparently based on article by A.K. Dewdney: “Simulated evolution: wherein bugs learn to hunt bacteria” (searching for this will find you some interesting resources). Full source code for the Common Lisp version is in the book as well as on the Land of Lisp website, the Clojure version is available on github.")

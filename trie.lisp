@@ -23,6 +23,7 @@
 (defun make-transitions (&optional (test #'eql))
   (make-hash-table :test test))
 
+
 (defun add-transition (st1 v st2)
   "Adds a transition between st1 and st2 when 'v' is received"
   (setf (gethash v (state-transitions st1)) st2))
@@ -47,16 +48,15 @@
       (setf (state-output last-node) output))))
 
 (defun remove-term (trie term)
-  "Removes the term from the trie, if present"
+  "Removes the term from the TRIE, if present"
   (labels ((remove-term-rec (chars states remove-flag)
-	     (format t "~a, ~a, flag:  ~a~%" (car chars) (car states) remove-flag)
 	     (if remove-flag
 		 (let ((remove-st (<= (hash-table-count (state-transitions (car states))) 1)))
-		   (format t "remove-st: ~a~%" remove-st)
 		   (remhash (car chars) (state-transitions (car states)))
 		   (remove-term-rec (cdr chars) (cdr states) remove-st)))))
     (when (term-present-p trie term) 
       (let ((branch (get-term-branch trie term)))
+	;; We add an extra char to pair states and characters in the recursion
 	(remove-term-rec (cons #\. (coerce (reverse term) 'list)) branch t)))))
 
 
@@ -111,7 +111,7 @@
 	nil)))
 
 (defun get-output (trie term)
-  "Retrieves the output for a give term, if present in the trie"
+  "Retrieves the output for a given term, if present in the trie"
   (let ((last-st (last-state trie term))) 
     (if last-st (state-output last-st)
 	nil)))
@@ -129,6 +129,9 @@
   "Returns all the terms in the trie the start with 'prefix'"
   (retrieve-terms (last-state trie prefix) prefix))
 
+(defun wild-card-output (trie prefix)
+  "Returns a list of the outputs associated to all the terms that start with 'prefix'"
+  (mapcar (lambda (term) (get-output trie term)) (wild-card trie prefix)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Comparison (only used for testing)

@@ -1,11 +1,12 @@
 
 (in-package #:trie)
 
+;;; TRIE
+;;; This is a simple trie implementation to contain the dictionary
+;;; of terms.
 
 (defstruct trie
   (init-st (make-state :id 0))
-  (comp-fn #'char<)
-  (key #'identity)
   (st-counter 1))
 
 (defun next-id (trie)

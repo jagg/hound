@@ -11,5 +11,15 @@
 	   #:term-present-p
 	   #:get-output
 	   #:wild-card
-	   #:wild-card-output))
+	   #:wild-card-output
+	   #:print-trie-file
+	   #:print-trie))
+
+(defpackage #:postings
+  (:use #:cl)
+  (:export #:pst-add
+	   #:pst-remove
+	   #:pst-union
+	   #:pst-intersection
+	   #:make-linked-pst))
 

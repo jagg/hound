@@ -3,6 +3,9 @@
 (defpackage #:hound
   (:use #:cl))
 
+(defpackage #:owl
+  (:use #:cl))
+
 (defpackage #:trie
   (:use #:cl)
   (:export #:add-term
@@ -21,5 +24,6 @@
 	   #:pst-remove
 	   #:pst-union
 	   #:pst-intersection
+	   #:get-list
 	   #:make-linked-pst))
 

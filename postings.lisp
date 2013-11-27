@@ -22,6 +22,9 @@
 (defun make-linked-pst (&optional (lst nil))
   (make-instance 'linked-pst :plst lst))
 
+(defun get-list (lplst)
+  (plst lplst))
+
 ;; TODO This operations can be improved to take into account that
 ;; the list is sorted
 

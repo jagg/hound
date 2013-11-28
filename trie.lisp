@@ -117,6 +117,11 @@
     (if last-st (state-output last-st)
 	nil)))
 
+(defun set-output (trie term output)
+  "Sets the output for a given term, if present in the trie"
+  (let ((last-st (last-state trie term))) 
+    (when last-st (setf (state-output last-st) output))))
+
 (defun retrieve-terms (state prefix)
   (let ((lst '()))
     (labels ((rt-rec (st w)

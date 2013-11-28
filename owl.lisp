@@ -17,7 +17,8 @@
 (defmacro report (test)
   `(restart-case
        (progn
-	 (format t "~:[FAIL~;OK  ~] ... ~a~%" (funcall ,test) ',test)
+	 (funcall ,test)
+	 (format t "OK ... ~a~%"  ',test)
 	 t)
      (ignore ()
        :report "Continue with the test"
@@ -28,12 +29,13 @@
 (defmacro defsuite (name doc &body tests)
   `(defun ,name ()
      ,doc
+     (format t "~a~%" ,doc)
      (handler-bind
 	 ((failed-assert #'(lambda (c) 
 			     (declare (ignore c))
 			     (when (not *interactive*) (invoke-restart 'ignore)))))
        (format t "Test result: ~:[FAIL~;OK~]~%" 
-	       (every (lambda (x) x)
+	       (every #'identity
 		      (list
 		       ,@(loop for test in tests collect `(report ,test))))))))
 
@@ -60,7 +62,7 @@
     (postings:pst-add pst 3)
     (check-property (postings:get-list pst) #'sorted-p)
     (postings:pst-remove pst 3)
-    (check (postings:get-list pst) '(1 5 7))
+    (check (postings:get-list pst) '(1 5))
     (check-property (postings:get-list pst) #'sorted-p)
     (postings:pst-remove pst 1)
     (check (postings:get-list pst) '(5))

@@ -13,6 +13,7 @@
 	   #:make-trie
 	   #:term-present-p
 	   #:get-output
+	   #:set-output
 	   #:wild-card
 	   #:wild-card-output
 	   #:print-trie-file

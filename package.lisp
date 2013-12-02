@@ -25,6 +25,7 @@
 	   #:pst-remove
 	   #:pst-union
 	   #:pst-intersection
+	   #:posting-p
 	   #:get-list
 	   #:make-linked-pst))
 

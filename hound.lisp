@@ -38,3 +38,31 @@
 				    (postings:pst-add (postings:make-linked-pst) id))))))
 	(map 'list #'add terms)
 	(setf (gethash id cache) document)))))
+
+
+;; Query language
+
+(defun qand (index &rest terms)
+  "Takes a list of term and returns the doc-ids that match them all"
+  (reduce (lambda (p1 p2) 
+	    (when (and (not (null p1)) (not (null p2))) 
+	      #'postings:pst-intersection p1 p2)) 
+	  (map 'list 
+	       (lambda (term) 
+		 (cond 
+		   ((postings:posting-p term) term)
+		   (t (trie:get-output (term-dic index) term))))
+	       terms)))
+
+(defun qwildcard (index prefix)
+  "Returns all the IDs for the documents that contain a term that starts with prefix"
+  (reduce (lambda (p1 p2) 
+	    (cond
+	      ((and (not (null p1)) (not (null p2))) (postings:pst-union p1 p2))
+	      ((null p1) p2)
+	      (t p1)))
+	  (trie:wild-card-output (term-dic index) prefix)))
+
+(defun retrieve (index posting)
+  "Retrieves the documents associated to this posting list"
+  (map 'list (lambda (doc-id) (gethash doc-id (cache index))) (postings:get-list posting)))

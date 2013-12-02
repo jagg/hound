@@ -13,6 +13,11 @@
 (defgeneric pst-intersection (post-lst1 post-lst2 &key comp-fn)
   (:documentation "Generates a new POSTING-LST only with the elements present in both lists"))
 
+(defgeneric posting-p (elem)
+  (:documentation "Checks if the element is a posting"))
+
+(defmethod posting-p ((elem t))
+  nil)
 
 ;; Naive implementation with a sorted linked list
 
@@ -24,6 +29,10 @@
 
 (defun get-list (lplst)
   (plst lplst))
+
+(defmethod posting-p ((elem linked-pst))
+  t)
+
 
 ;; TODO This operations can be improved to take into account that
 ;; the list is sorted

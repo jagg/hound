@@ -45,7 +45,24 @@
 (defsuite posting-tests
   "Tests for basic operations with the posting list"
   #'test-remove
-  #'test-add)
+  #'test-add
+  #'test-union-intersection)
+
+(defun test-union-intersection ()
+  (let ((ps1 (postings:make-linked-pst (list 0 1 3 5 10)))
+	(ps2 (postings:make-linked-pst (list 0 2 4 6 10))))
+    (flet ((union/intersection (l1 l2)
+	      (check (postings:get-list (postings:pst-intersection l1 l2)) '(0 10))
+	      (check (postings:get-list (postings:pst-union l1 l2)) '(0 1 2 3 4 5 6 10)))
+	   (integrity ()
+	     (check (postings:get-list ps1) '(0 1 3 5 10))
+	     (check (postings:get-list ps2) '(0 2 4 6 10))))
+      (union/intersection ps1 ps2)
+      (integrity)
+      (union/intersection ps2 ps1)
+      (integrity))))
+
+
 
 (defun test-add ()
   (let ((pst (postings:make-linked-pst)))

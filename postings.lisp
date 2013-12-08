@@ -55,8 +55,8 @@
 
 (defun lpst-join (post-lst1  post-lst2 operation &key (comp-fn #'<))
   (with-accessors ((lst plst)) post-lst1
-    (with-accessors ((lst2 plst)) post-lst2
-      (make-instance 'linked-pst :plst (sort (funcall operation lst lst2) comp-fn)))))
+	(with-accessors ((lst2 plst)) post-lst2
+	  (make-instance 'linked-pst :plst (sort (copy-list (funcall operation lst lst2)) comp-fn)))))
 
 (defmethod print-object ((object linked-pst) stream)
   (print-unreadable-object (object stream :type t)
